@@ -1,0 +1,5 @@
+Qore Langugage and Qorus Integration Server Documentation Bundleo
+
+http://qore.org
+http://qoretechnologies.com
+
