@@ -44,10 +44,12 @@ class QHelpCollectionProject {
         while (it.next()) {
             printf("add: %s\n", it.getValue());
             # TODO/FIXME: check file existence, readability, etc.
-            push temp.QHelpCollectionProject.docFiles.register.file, it.getValue();
+            string fname = basename(it.getValue());
+            cp(it.getValue(), fname);
+            push temp.QHelpCollectionProject.docFiles.register.file, fname;
         }
 
-        string xml = makeFormattedXMLString(temp);
+        string xml = make_xml(temp, XGF_ADD_FORMATTING);
         printf("%N\n", xml);
 
         File f();
@@ -61,6 +63,12 @@ class QHelpCollectionProject {
 #        if (!rc) {
 #            throw "QCOLLECTIONGENERATOR-EXE-ERROR";
 #        }
+    }
+
+    cp(string from, string to) {
+        string cmd = sprintf("cp \"%s\" \"%s\"", from, to);
+        printf(" shell: %s\n", cmd);
+        backquote(cmd);
     }
 
 } # class QHelpCollectionProject
