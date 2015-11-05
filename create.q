@@ -129,6 +129,7 @@ class Main {
 class QchFile {
     private {
         string m_fileName;
+        bool m_valid = False;
     }
 
     constructor(string indexFile) {
@@ -141,8 +142,18 @@ class QchFile {
 
         string cmd = sprintf("cd \"%s\";%s index.qhp -o \"%s/%s\"", basedir, opts.qhelpg, opts.outdir, m_fileName);
         printf("    shell: %s\n", cmd);
-        backquote(cmd);
-#        cp(basedir + "/" + m_fileName, opts.outdir);        
+        int rc;
+        string ret = backquote(cmd, \rc);
+        if (rc) {
+            printf("\nError processing %s\n%s\n\n", indexFile, ret);
+            return;
+        }
+
+        m_valid = True;
+    }
+
+    bool isValid() {
+        return m_valid;
     }
 
     string fileName() {
@@ -166,7 +177,7 @@ class QHelpCollectionProject {
                     "assistant" : (
                         "title" : "Qore/Qorus Documentation",
                         "startPage" : "qthelp://org.qore.qore-lang/qore-lang/intro.html",
-                        "currentFilter" : "myfilter",
+                        "currentFilter" : "qore-lang",
                         "applicationIcon" : "./logo.png",
                         "enableFilterFunctionality" : "true",
                         "enableDocumentationManager" : "true",
@@ -196,9 +207,14 @@ class QHelpCollectionProject {
         ListIterator it(files);
         while (it.next()) {
             QchFile qch(it.getValue());
-            # TODO/FIXME: check file existence, readability, etc.
-            string fname = basename(it.getValue());
-            push temp.QHelpCollectionProject.docFiles.register.file, qch.fileName();
+            if (!qch.isValid())
+                continue;
+
+            string fname = qch.fileName();
+            if (fname == "qore-lang-reference.qch")
+                 unshift temp.QHelpCollectionProject.docFiles.register.file, fname;
+            else
+                 push temp.QHelpCollectionProject.docFiles.register.file, fname;
         }
 
         string xml = make_xml(temp, XGF_ADD_FORMATTING);
