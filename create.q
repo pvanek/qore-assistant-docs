@@ -74,9 +74,31 @@ class Main {
             help(1);
         }
 
-        list projects = getProjectFiles(ARGV);
+        list srcdirs = filterOutOptions(ARGV);
+        list projects = getProjectFiles(srcdirs);
 
         QHelpCollectionProject p(projects);
+    }
+
+    private list filterOutOptions(softlist a) {
+        int i = 0;
+        while (i < a.size()) {
+            if (a[i] == "-o" || a[i] == "-c" || a[i] == "-g") {
+                splice a, i, 2;
+                continue;
+            }
+            if (a[i].equalPartial("--outdir=") ||
+                a[i].equalPartial("--cgenerator=") ||
+                a[i].equalPartial("--hgenerator=") ||
+                a[i].equalPartial("-o") ||
+                a[i].equalPartial("-c") ||
+                a[i].equalPartial("-g")) {
+                splice a, i, 1;
+                continue;
+            }
+            i++;
+        }
+        return a;
     }
 
     private guessQhelpGenerator() {
